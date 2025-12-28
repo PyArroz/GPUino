@@ -87,8 +87,24 @@ class GPDuinoApp:
             variable=self.swap_axes
         ).grid(column=0, row=2, columnspan=3, sticky="w", pady=5)
 
+        # ---- CHECKBOX ENABLE/DISABLE AXES ----
+        self.enable_axis1 = tk.BooleanVar(value=True)
+        self.enable_axis2 = tk.BooleanVar(value=True)
+
+        ttk.Checkbutton(
+            frame,
+            text="Enable Axis 1 (X1, Y1)",
+            variable=self.enable_axis1
+        ).grid(column=0, row=3, columnspan=3, sticky="w", pady=2)
+
+        ttk.Checkbutton(
+            frame,
+            text="Enable Axis 2 (X2, Y2)",
+            variable=self.enable_axis2
+        ).grid(column=0, row=4, columnspan=3, sticky="w", pady=2)
+
         self.log = tk.Text(frame, height=15, width=60, state="disabled")
-        self.log.grid(column=0, row=3, columnspan=3, pady=5)
+        self.log.grid(column=0, row=5, columnspan=3, pady=5)
 
         self.refresh_ports()
 
@@ -182,10 +198,22 @@ class GPDuinoApp:
                     x1, x2 = x2, x1
                     y1, y2 = y2, y1
 
-                self.j.set_axis(pyvjoy.HID_USAGE_X,  map_axis(x1))
-                self.j.set_axis(pyvjoy.HID_USAGE_Y,  map_axis(y1))
-                self.j.set_axis(pyvjoy.HID_USAGE_Z,  map_axis(x2))
-                self.j.set_axis(pyvjoy.HID_USAGE_RX, map_axis(y2))
+                # ---- APPLY AXES IF ENABLED ----
+                if self.enable_axis1.get():
+                    self.j.set_axis(pyvjoy.HID_USAGE_X,  map_axis(x1))
+                    self.j.set_axis(pyvjoy.HID_USAGE_Y,  map_axis(y1))
+                else:
+                    # Center axis 1 when disabled
+                    self.j.set_axis(pyvjoy.HID_USAGE_X,  16383)
+                    self.j.set_axis(pyvjoy.HID_USAGE_Y,  16383)
+
+                if self.enable_axis2.get():
+                    self.j.set_axis(pyvjoy.HID_USAGE_Z,  map_axis(x2))
+                    self.j.set_axis(pyvjoy.HID_USAGE_RX, map_axis(y2))
+                else:
+                    # Center axis 2 when disabled
+                    self.j.set_axis(pyvjoy.HID_USAGE_Z,  16383)
+                    self.j.set_axis(pyvjoy.HID_USAGE_RX, 16383)
 
                 self.j.set_button(1, b1)
                 self.j.set_button(2, b2)
