@@ -186,12 +186,18 @@ class GPDuinoApp:
                     continue
 
                 try:
-                    data = [int(p) for p in parts]
+                    # First 4 values are floats (axes), last 4 are ints (buttons)
+                    x1 = float(parts[0])
+                    y1 = float(parts[1])
+                    x2 = float(parts[2])
+                    y2 = float(parts[3])
+                    b1 = int(parts[4])
+                    b2 = int(parts[5])
+                    b3 = int(parts[6])
+                    b4 = int(parts[7])
                 except ValueError:
-                    self.log_msg("[SKIP] Not convertible to int")
+                    self.log_msg("[SKIP] Not convertible to float/int")
                     continue
-
-                x1, y1, x2, y2, b1, b2, b3, b4 = data
 
                 # ---- AXIS SWAP ----
                 if self.swap_axes.get():

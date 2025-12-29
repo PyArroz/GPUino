@@ -59,15 +59,15 @@ bool buttonState[4]     = {HIGH, HIGH, HIGH, HIGH};
 
 // -------------------- AXIS CONFIG --------------------
 const unsigned int axisTimeout = 3000; // µs max (adjustable)
-const int deadzone = 3; // Deadzone threshold
+const int deadzone = 1; // Deadzone threshold
 const int centerOffset = 14; // Center value when stick is at rest
 
 // Smoothing filter
 const int numReadings = 5;
-unsigned int readingsX[numReadings] = {0};
-unsigned int readingsY[numReadings] = {0};
-unsigned int readings2X[numReadings] = {0};
-unsigned int readings2Y[numReadings] = {0};
+float readingsX[numReadings] = {0};
+float readingsY[numReadings] = {0};
+float readings2X[numReadings] = {0};
+float readings2Y[numReadings] = {0};
 int readIndex = 0;
 
 // -------------------- GAMEPORT RC READING --------------------
@@ -75,7 +75,7 @@ unsigned int readGameportAxis(int pin) {
   // Discharge capacitor
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
-  delayMicroseconds(10);
+  delayMicroseconds(5);
 
   // Measure charge time
   pinMode(pin, INPUT);
@@ -130,7 +130,7 @@ void loop() {
   readIndex = (readIndex + 1) % numReadings;
   
   // Calculate averages for smooth values
-  unsigned long sumX = 0, sumY = 0, sum2X = 0, sum2Y = 0;
+  float sumX = 0, sumY = 0, sum2X = 0, sum2Y = 0;
   for (int i = 0; i < numReadings; i++) {
     sumX += readingsX[i];
     sumY += readingsY[i];
@@ -138,16 +138,16 @@ void loop() {
     sum2Y += readings2Y[i];
   }
   
-  unsigned int axisX = sumX / numReadings;
-  unsigned int axisY = sumY / numReadings;
-  unsigned int axis2X = sum2X / numReadings;
-  unsigned int axis2Y = sum2Y / numReadings;
+  float axisX = sumX / numReadings;
+  float axisY = sumY / numReadings;
+  float axis2X = sum2X / numReadings;
+  float axis2Y = sum2Y / numReadings;
   
   // Apply center offset and deadzone
-  int centeredX = (int)axisX - centerOffset;
-  int centeredY = (int)axisY - centerOffset;
-  int centered2X = (int)axis2X - centerOffset;
-  int centered2Y = (int)axis2Y - centerOffset;
+  float centeredX = axisX - centerOffset;
+  float centeredY = axisY - centerOffset;
+  float centered2X = axis2X - centerOffset;
+  float centered2Y = axis2Y - centerOffset;
   
   // Apply deadzone
   if (abs(centeredX) < deadzone) centeredX = 0;
@@ -156,10 +156,10 @@ void loop() {
   if (abs(centered2Y) < deadzone) centered2Y = 0;
 
   // ---------- SERIAL OUTPUT ----------
-  Serial.print(centeredX);   Serial.print(",");
-  Serial.print(centeredY);   Serial.print(",");
-  Serial.print(centered2X);  Serial.print(",");
-  Serial.print(centered2Y);  Serial.print(",");
+  Serial.print(centeredX, 2);   Serial.print(",");
+  Serial.print(centeredY, 2);   Serial.print(",");
+  Serial.print(centered2X, 2);  Serial.print(",");
+  Serial.print(centered2Y, 2);  Serial.print(",");
   Serial.print(buttonState[0] == LOW); Serial.print(",");
   Serial.print(buttonState[1] == LOW); Serial.print(",");
   Serial.print(buttonState[2] == LOW); Serial.print(",");
